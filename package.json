@@ -1,20 +1,16 @@
 {
   "name": "cordova-plugin-x-socialsharing",
-  "version": "5.2.0",
-  "description": "Share text, images (and other files), or a link via the native sharing widget of your device. Android is fully supported, as well as iOS 6 and up. WP8 has somewhat limited support.",
+  "version": "5.2.1",
+  "description": "Share text, images (and other files), or a link via the native sharing widget of your device. iOS is fully supported.",
   "cordova": {
     "id": "cordova-plugin-x-socialsharing",
     "platforms": [
-      "ios",
-      "android",
-      "wp8",
-      "windows",
-      "web"
+      "ios"
     ]
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/EddyVerbruggen/SocialSharing-PhoneGap-Plugin.git"
+    "url": "git+https://github.com/upreshtikampersi/SocialSharing-PhoneGap-Plugin.git"
   },
   "keywords": [
     "Social",
@@ -30,9 +26,7 @@
     "cordova",
     "WebShare",
     "ecosystem:cordova",
-    "cordova-ios",
-    "cordova-android",
-    "cordova-windows"
+    "cordova-ios"
   ],
   "engines": [
     {
@@ -40,10 +34,10 @@
       "version": ">=3.0.0"
     }
   ],
-  "author": "Eddy Verbruggen - @EddyVerbruggen",
+  "author": "Eddy Verbruggen - @EddyVerbruggen, Upresh Tikam",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/EddyVerbruggen/SocialSharing-PhoneGap-Plugin/issues"
+    "url": "https://github.com/upreshtikampersi/SocialSharing-PhoneGap-Plugin/issues"
   },
-  "homepage": "https://github.com/EddyVerbruggen/SocialSharing-PhoneGap-Plugin#readme"
+  "homepage": "https://github.com/upreshtikampersi/SocialSharing-PhoneGap-Plugin#readme"
 }
