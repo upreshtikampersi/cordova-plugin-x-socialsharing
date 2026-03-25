@@ -94,30 +94,40 @@ static NSString *const kShareOptionUrl = @"url";
     NSMutableArray *activityItems = [[NSMutableArray alloc] init];
     BOOL hasFiles = (filenames != (id)[NSNull null] && filenames != nil && filenames.count > 0);
 
-    // Important for iOS Files save:
-    // only add message when no files are being shared.
-    if (!hasFiles && message != (id)[NSNull null] && message != nil && [message length] > 0) {
-      [activityItems addObject:message];
-    }
-
     if (hasFiles) {
       NSMutableArray *files = [[NSMutableArray alloc] init];
       for (NSString* filename in filenames) {
-        NSObject *file = [self getImage:filename];
-        if (file == nil) {
-          file = [self getFile:filename];
-        }
-        if (file != nil) {
-          [files addObject:file];
+        NSURL *fileUrl = [self getFile:filename];
+        if (fileUrl != nil && [fileUrl isFileURL] && [[NSFileManager defaultManager] fileExistsAtPath:[fileUrl path]]) {
+          [files addObject:fileUrl];
+          NSLog(@"[SocialSharing] prepared file URL: %@", [fileUrl path]);
+        } else {
+          NSLog(@"[SocialSharing] invalid file for sharing: %@", filename);
         }
       }
       [activityItems addObjectsFromArray:files];
+    } else {
+      if (message != (id)[NSNull null] && message != nil && [message length] > 0) {
+        [activityItems addObject:message];
+      }
+
+      if (urlString != (id)[NSNull null] && urlString != nil && [urlString length] > 0) {
+        NSURL *shareUrl = [NSURL URLWithString:[urlString URLEncodedString]];
+        if (shareUrl != nil) {
+          [activityItems addObject:shareUrl];
+        }
+      }
     }
 
-    if (!hasFiles && urlString != (id)[NSNull null] && urlString != nil && [urlString length] > 0) {
-      NSURL *shareUrl = [NSURL URLWithString:[urlString URLEncodedString]];
-      if (shareUrl != nil) {
-        [activityItems addObject:shareUrl];
+    for (id item in activityItems) {
+      if ([item isKindOfClass:[NSURL class]]) {
+        NSURL *u = (NSURL *)item;
+        NSLog(@"[SocialSharing] activity item URL = %@", u);
+        NSLog(@"[SocialSharing] isFileURL = %@", u.isFileURL ? @"YES" : @"NO");
+        NSLog(@"[SocialSharing] path = %@", u.path);
+        NSLog(@"[SocialSharing] exists = %@", [[NSFileManager defaultManager] fileExistsAtPath:u.path] ? @"YES" : @"NO");
+      } else {
+        NSLog(@"[SocialSharing] activity item class = %@ value = %@", NSStringFromClass([item class]), item);
       }
     }
 
@@ -505,10 +515,6 @@ static NSString *const kShareOptionUrl = @"url";
   return safeName;
 }
 
-/**
- * Delegate will be called after the mail composer did finish an action
- * to dismiss the view.
- */
 - (void)mailComposeController:(MFMailComposeViewController*)controller
           didFinishWithResult:(MFMailComposeResult)result
                         error:(NSError*)error {
@@ -626,7 +632,6 @@ static NSString *const kShareOptionUrl = @"url";
 
   if (message != (id)[NSNull null]) {
     _documentInteractionController.annotation = @{@"InstagramCaption" : message};
-
     UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
     [pasteboard setValue:message forPasteboardType:@"public.utf8-plain-text"];
   }
@@ -770,7 +775,10 @@ static NSString *const kShareOptionUrl = @"url";
         name = @"attachment.bin";
       }
       name = [self sanitizeFileName:name defaultName:@"attachment.bin"];
-      file = [NSURL fileURLWithPath:[self storeInFile:name fileData:fileData]];
+      NSString *storedPath = [self storeInFile:name fileData:fileData];
+      NSLog(@"[SocialSharing] stored file path = %@", storedPath);
+      NSLog(@"[SocialSharing] stored file exists = %@", [[NSFileManager defaultManager] fileExistsAtPath:storedPath] ? @"YES" : @"NO");
+      file = [NSURL fileURLWithPath:storedPath];
 
     } else if ([fileName hasPrefix:@"www/"]) {
       NSString *bundlePath = [[NSBundle mainBundle] bundlePath];
@@ -778,7 +786,7 @@ static NSString *const kShareOptionUrl = @"url";
       file = [NSURL fileURLWithPath:fullPath];
 
     } else if ([fileName hasPrefix:@"file://"]) {
-      file = [NSURL fileURLWithPath:[fileName substringFromIndex:7]];
+      file = [NSURL URLWithString:fileName];
 
     } else if (rangeData.location != NSNotFound) {
       NSString *fileType = (NSString*)[[[fileName substringFromIndex:rangeData.location + rangeData.length] componentsSeparatedByString:@";"] objectAtIndex:0];
@@ -801,7 +809,11 @@ static NSString *const kShareOptionUrl = @"url";
 
       NSString *base64content = (NSString*)[[fileName componentsSeparatedByString:@","] lastObject];
       NSData* data = [SocialSharing dataFromBase64String:base64content];
-      file = [NSURL fileURLWithPath:[self storeInFile:attachmentName fileData:data]];
+
+      NSString *storedPath = [self storeInFile:attachmentName fileData:data];
+      NSLog(@"[SocialSharing] stored file path = %@", storedPath);
+      NSLog(@"[SocialSharing] stored file exists = %@", [[NSFileManager defaultManager] fileExistsAtPath:storedPath] ? @"YES" : @"NO");
+      file = [NSURL fileURLWithPath:storedPath];
 
     } else {
       file = [NSURL fileURLWithPath:fileName];
