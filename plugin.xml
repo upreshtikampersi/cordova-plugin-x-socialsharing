@@ -34,6 +34,16 @@
   <!-- ios -->
   <platform name="ios">
 
+  <!-- Enable file sharing -->
+  <config-file target="*-Info.plist" parent="UIFileSharingEnabled">
+            <true/>
+  </config-file>
+        
+  <!-- Support opening documents in place -->
+  <config-file target="*-Info.plist" parent="LSSupportsOpeningDocumentsInPlace">
+            <true/>
+  </config-file>
+          
     <config-file target="config.xml" parent="/*">
       <feature name="SocialSharing">
         <param name="ios-package" value="SocialSharing"/>
